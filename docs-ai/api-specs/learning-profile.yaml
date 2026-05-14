@@ -1,0 +1,258 @@
+openapi: 3.0.0
+info:
+  title: Learning Profile API
+  description: 学习画像模块 API 接口规范
+  version: 1.0.0
+  contact:
+    name: tech-lead
+    email: tech@example.com
+
+servers:
+  - url: http://localhost:5055
+    description: 开发环境
+  - url: https://api.example.com
+    description: 生产环境
+
+paths:
+  /api/profiles:
+    post:
+      summary: 创建学习画像
+      description: 创建一个新的学习画像
+      tags: [profiles]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileCreate'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: 请求参数错误
+        '401':
+          description: 未授权
+
+    get:
+      summary: 列出学习画像
+      description: 获取当前用户的所有学习画像
+      tags: [profiles]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+          description: 返回数量限制
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: 偏移量
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Profile'
+        '401':
+          description: 未授权
+
+  /api/profiles/{profileId}:
+    get:
+      summary: 获取学习画像
+      description: 根据 ID 获取学习画像
+      tags: [profiles]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 画像 ID
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '404':
+          description: 画像不存在
+        '401':
+          description: 未授权
+
+    put:
+      summary: 更新学习画像
+      description: 更新指定的学习画像
+      tags: [profiles]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 画像 ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdate'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '404':
+          description: 画像不存在
+        '400':
+          description: 请求参数错误
+        '401':
+          description: 未授权
+
+    delete:
+      summary: 删除学习画像
+      description: 删除指定的学习画像
+      tags: [profiles]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: 画像 ID
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Profile deleted successfully"
+        '404':
+          description: 画像不存在
+        '401':
+          description: 未授权
+
+components:
+  schemas:
+    ProfileBase:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 画像名称
+          example: "My Learning Profile"
+        description:
+          type: string
+          description: 画像描述
+          example: "This is my learning profile"
+        learning_style:
+          type: string
+          description: 学习风格
+          example: "visual"
+        interests:
+          type: array
+          items:
+            type: string
+          description: 兴趣领域
+          example: ["math", "science", "programming"]
+        goals:
+          type: array
+          items:
+            type: string
+          description: 学习目标
+          example: ["learn python", "master data science"]
+        metadata:
+          type: object
+          description: 元数据
+          example: {"key": "value"}
+      required:
+        - name
+
+    ProfileCreate:
+      allOf:
+        - $ref: '#/components/schemas/ProfileBase'
+
+    ProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 画像名称
+        description:
+          type: string
+          description: 画像描述
+        learning_style:
+          type: string
+          description: 学习风格
+        interests:
+          type: array
+          items:
+            type: string
+          description: 兴趣领域
+        goals:
+          type: array
+          items:
+            type: string
+          description: 学习目标
+        metadata:
+          type: object
+          description: 元数据
+
+    Profile:
+      allOf:
+        - $ref: '#/components/schemas/ProfileBase'
+        - type: object
+          properties:
+            id:
+              type: string
+              description: 画像 ID
+              example: "profile-123"
+            user_id:
+              type: string
+              description: 用户 ID
+              example: "user-456"
+            created_at:
+              type: string
+              format: date-time
+              description: 创建时间
+            updated_at:
+              type: string
+              format: date-time
+              description: 更新时间
+          required:
+            - id
+            - user_id
+            - created_at
+            - updated_at
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

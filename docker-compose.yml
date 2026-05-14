@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # SurrealDB 数据库
+  surrealdb:
+    image: surrealdb/surrealdb:latest
+    container_name: surrealdb
+    command: start --log debug --user root --pass root file:/data/database.db
+    ports:
+      - "8000:8000"
+    volumes:
+      - surrealdb_data:/data
+    restart: unless-stopped
+
+  # FastAPI 后端
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api
+    ports:
+      - "5055:5055"
+    environment:
+      - SURREALDB_URL=http://surrealdb:8000
+      - SURREALDB_USER=root
+      - SURREALDB_PASS=root
+      - OPEN_NOTEBOOK_ENCRYPTION_KEY=${OPEN_NOTEBOOK_ENCRYPTION_KEY}
+    depends_on:
+      - surrealdb
+    restart: unless-stopped
+
+  # Next.js 前端
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:5055
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # 后台任务处理器
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: worker
+    command: uv run python -m open_notebook.commands.worker
+    environment:
+      - SURREALDB_URL=http://surrealdb:8000
+      - SURREALDB_USER=root
+      - SURREALDB_PASS=root
+    depends_on:
+      - surrealdb
+    restart: unless-stopped
+
+volumes:
+  surrealdb_data:

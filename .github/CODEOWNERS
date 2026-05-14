@@ -1,0 +1,31 @@
+# CODEOWNERS - 代码所有权定义
+# 每个 PR 会自动分配给对应的 reviewer
+
+# 共享层 - 所有人都需要 review
+/shared/                     @lucian-why
+
+# 功能模块 - 对应负责人 review
+/features/learning-profile/  @lucian-why
+/features/chat/              @lucian-why
+/features/sources/           @lucian-why
+/features/podcasts/          @lucian-why
+
+# 基础设施 - tech-lead review
+/AGENTS.md                   @lucian-why
+/CLAUDE.md                   @lucian-why
+/.github/                    @lucian-why
+/.claude/                    @lucian-why
+
+# 前端公共部分
+/frontend/                   @lucian-why
+
+# 文档
+/docs-ai/                    @lucian-why
+
+# Docker 和部署
+/docker-compose.yml          @lucian-why
+/Dockerfile                  @lucian-why
+/Makefile                    @lucian-why
+
+# 测试
+/tests/                      @lucian-why
